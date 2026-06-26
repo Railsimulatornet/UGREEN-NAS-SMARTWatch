@@ -15,6 +15,17 @@ Das Skript liest SMART-Werte von HDD-, NVMe-, USB- und eMMC-Laufwerken aus, kann
 - Cron-tauglich, auch ohne interaktives Shell-Environment
 - Für UGREEN NAS / UGOS optimiert
 
+## Neuerungen in V5.00
+
+- Unterstützung für DXP2800 GT, DXP4800 GT, DXP6800 Ultra und DXP8800 Ultra
+- U.2-NVMe-Unterstützung für die GT-Serie
+- Physische Unterscheidung von U.2-Schacht 1 und 2 beim DXP4800 GT
+- Verbesserte Modellnormalisierung
+- Vollständig getrennte deutsche und englische Konsolen- und E-Mail-Ausgaben
+- Präzisere Anzeige der unterstützten NVMe-Laufwerke
+- Korrigierte Darstellung übersprungener eMMC-Lesetests
+- Fortschrittsmeldungen vor und nach vollständigen eMMC-Lesetests
+
 ## Screenshots
 
 ### Deutsch (DE)
@@ -34,10 +45,12 @@ Das Skript liest SMART-Werte von HDD-, NVMe-, USB- und eMMC-Laufwerken aus, kann
 UGREEN-NAS-SMARTWatch/
 ├─ LICENSE
 ├─ README.md
-├─ UGREEN_SMARTWatch_Manual_DE-EN_v4.00.pdf
+├─ RELEASE_NOTES_v5.00.md
+├─ UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf
 ├─ Screens/
 │  ├─ SMARTWatch.png
 │  ├─ SMARTWatch1280.jpg
+│  ├─ SMARTWatchEN.png
 │  ├─ Outlook.jpg
 │  ├─ OutlookEN.jpg
 │  ├─ Mobil.jpg
@@ -154,7 +167,7 @@ Empfohlene Standardpfade für Nutzer:
 
 ## Dokumentation
 
-- Handbuch (PDF): `UGREEN_SMARTWatch_Manual_DE-EN_v4.00.pdf`
+- Handbuch (PDF): `UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf`
 
 ## Lizenz
 
@@ -162,6 +175,6 @@ MIT License
 
 ## Version
 
-- v4.00
+- v5.00
 
 <!-- refresh contributors graph -->

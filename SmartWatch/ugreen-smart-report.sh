@@ -3,12 +3,12 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Copyright Roman Glos 2026
 # ugreen-smart-report.sh
 # Unified SMART report script for UGREEN NAS (DE/EN via env)
-# Version 4.00
+# Version 5.00
 
 set -u
 
 SCRIPT_NAME="$(basename "$0")"
-SCRIPT_VERSION="4.00"
+SCRIPT_VERSION="5.00"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/smart-report.env}"
 
@@ -279,10 +279,10 @@ def normalize_model(raw: str) -> str:
     if model_override.strip():
         return model_override.strip().upper()
     tokens = r.replace(" ", "")
-    for k in ("DXP480TPLUS","DX4700","IDX6011PRO","IDX6011","DH4300PLUS","DH2300","DXP2800","DXP4800PRO","DXP4800PLUS","DXP4800","DXP6800PRO","DXP6800PLUS","DXP8800PRO","DXP8800PLUS"):
+    for k in ("DXP480TPLUS","DX4700","IDX6011PRO","IDX6011","DH4300PLUS","DH2300","DXP2800GT","DXP2800","DXP4800GT","DXP4800PRO","DXP4800PLUS","DXP4800","DXP6800ULTRA","DXP6800PRO","DXP6800PLUS","DXP8800ULTRA","DXP8800PRO","DXP8800PLUS"):
         if k in tokens:
             return k
-    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4})", tokens)
+    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}ULTRA|DXP[0-9]{4}GT|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4})", tokens)
     return m.group(1) if m else "UGREEN"
 
 MODEL = normalize_model(raw_model)
@@ -462,13 +462,42 @@ report_nvme_devices = list(user_nvme_devices)
 if sys_nvme_ctrl and sys_nvme_ctrl in ordered_nvme:
     report_nvme_devices.append(sys_nvme_ctrl)
 system_nvme_slot = 3 if (MODEL.startswith("DXP") or MODEL.startswith("IDX")) and sys_nvme_ctrl else (len(user_nvme_devices) + 1 if sys_nvme_ctrl else 0)
+
+def nvme_by_path_name(dev: str) -> str:
+    """Return the stable /dev/disk/by-path name for an NVMe controller."""
+    m = re.match(r"^/dev/(nvme\d+)$", dev or "")
+    if not m:
+        return ""
+    disk_node = f"/dev/{m.group(1)}n1"
+    rc, out, _ = run(
+        ["bash", "-lc", "ls -1 /dev/disk/by-path/*nvme-* 2>/dev/null | grep -v part | sort"],
+        timeout=5,
+    )
+    for path in out.splitlines():
+        rc2, real, _ = run(["readlink", "-f", path], timeout=5)
+        if (real or "").strip() == disk_node:
+            return os.path.basename(path.strip())
+    return ""
+
+
+def nvme_user_label(dev: str, generic_index: int) -> str:
+    """Use verified physical U.2 labels on DXP4800 GT; otherwise a safe logical label."""
+    path_name = nvme_by_path_name(dev)
+    if MODEL == "DXP4800GT":
+        if "pci-0000:01:00.0-nvme-1" in path_name:
+            return "U.2 Bay 1" if IS_EN else "U.2-Schacht 1"
+        if "pci-0000:02:00.0-nvme-1" in path_name:
+            return "U.2 Bay 2" if IS_EN else "U.2-Schacht 2"
+        return f"M.2 NVMe {generic_index}" if IS_EN else f"M.2-NVMe {generic_index}"
+    return f"NVME{generic_index}"
+
 nvme_label_map = {}
 user_slot_idx = 1
 for dev in report_nvme_devices:
     if sys_nvme_ctrl and dev == sys_nvme_ctrl:
-        nvme_label_map[dev] = f"NVME{system_nvme_slot} {'System disk' if IS_EN else 'Systemdisk'}" if system_nvme_slot else ({'System disk' if IS_EN else 'Systemdisk'})
+        nvme_label_map[dev] = f"NVME{system_nvme_slot} {'System drive' if IS_EN else 'Systemlaufwerk'}" if system_nvme_slot else ({'System drive' if IS_EN else 'Systemlaufwerk'})
     else:
-        nvme_label_map[dev] = f"NVME{user_slot_idx}"
+        nvme_label_map[dev] = nvme_user_label(dev, user_slot_idx)
         user_slot_idx += 1
 
 nvme_info = {}
@@ -501,7 +530,7 @@ def drive_label(dev: str) -> str:
     rec = next((r for r in sd_records if r["path"] == dev), None)
     parts = []
     if dev in bay_mapping:
-        parts.append(f"Bay {bay_mapping[dev]}")
+        parts.append(f"{'Bay' if IS_EN else 'Schacht'} {bay_mapping[dev]}")
         info = lsblk_scsi.get(dev, {})
         if info.get("model"):
             parts.append(info["model"])
@@ -1145,10 +1174,10 @@ def normalize_model(raw: str) -> str:
     if model_override.strip():
         return model_override.strip().upper()
     tokens = r.replace(" ", "")
-    for k in ("DXP480TPLUS","DX4700","IDX6011PRO","IDX6011","DH4300PLUS","DH2300","DXP2800","DXP4800PRO","DXP4800PLUS","DXP4800","DXP6800PRO","DXP6800PLUS","DXP8800PRO","DXP8800PLUS"):
+    for k in ("DXP480TPLUS","DX4700","IDX6011PRO","IDX6011","DH4300PLUS","DH2300","DXP2800GT","DXP2800","DXP4800GT","DXP4800PRO","DXP4800PLUS","DXP4800","DXP6800ULTRA","DXP6800PRO","DXP6800PLUS","DXP8800ULTRA","DXP8800PRO","DXP8800PLUS"):
         if k in tokens:
             return k
-    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4})", tokens)
+    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}ULTRA|DXP[0-9]{4}GT|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4})", tokens)
     return m.group(1) if m else "UGREEN"
 
 MODEL = normalize_model(raw_model)
@@ -1307,13 +1336,42 @@ report_nvme_devices = list(user_nvme_devices)
 if sys_nvme_ctrl and sys_nvme_ctrl in nvme_devices:
     report_nvme_devices.append(sys_nvme_ctrl)
 system_nvme_slot = 3 if (MODEL.startswith("DXP") or MODEL.startswith("IDX")) and sys_nvme_ctrl else (len(user_nvme_devices) + 1 if sys_nvme_ctrl else 0)
+
+def nvme_by_path_name(dev: str) -> str:
+    """Return the stable /dev/disk/by-path name for an NVMe controller."""
+    m = re.match(r"^/dev/(nvme\d+)$", dev or "")
+    if not m:
+        return ""
+    disk_node = f"/dev/{m.group(1)}n1"
+    rc, out, _ = run(
+        ["bash", "-lc", "ls -1 /dev/disk/by-path/*nvme-* 2>/dev/null | grep -v part | sort"],
+        timeout=5,
+    )
+    for path in out.splitlines():
+        rc2, real, _ = run(["readlink", "-f", path], timeout=5)
+        if (real or "").strip() == disk_node:
+            return os.path.basename(path.strip())
+    return ""
+
+
+def nvme_user_label(dev: str, generic_index: int) -> str:
+    """Use verified physical U.2 labels on DXP4800 GT; otherwise a safe logical label."""
+    path_name = nvme_by_path_name(dev)
+    if MODEL == "DXP4800GT":
+        if "pci-0000:01:00.0-nvme-1" in path_name:
+            return tr("U.2-Schacht 1", "U.2 Bay 1")
+        if "pci-0000:02:00.0-nvme-1" in path_name:
+            return tr("U.2-Schacht 2", "U.2 Bay 2")
+        return tr(f"M.2-NVMe {generic_index}", f"M.2 NVMe {generic_index}")
+    return f"NVME{generic_index}"
+
 nvme_label_map = {}
 user_slot_idx = 1
 for dev in report_nvme_devices:
     if sys_nvme_ctrl and dev == sys_nvme_ctrl:
-        nvme_label_map[dev] = f"NVME{system_nvme_slot} {tr('Systemdisk', 'System disk')}" if system_nvme_slot else tr('Systemdisk', 'System disk')
+        nvme_label_map[dev] = f"NVME{system_nvme_slot} {tr('Systemlaufwerk', 'System drive')}" if system_nvme_slot else tr('Systemlaufwerk', 'System drive')
     else:
-        nvme_label_map[dev] = f"NVME{user_slot_idx}"
+        nvme_label_map[dev] = nvme_user_label(dev, user_slot_idx)
         user_slot_idx += 1
 
 nvme_info = {}
@@ -1344,7 +1402,7 @@ def drive_label(dev: str) -> str:
     rec = next((r for r in sd_records if r["path"] == dev), None)
     parts = []
     if dev in bay_mapping:
-        parts.append(f"Bay {bay_mapping[dev]}")
+        parts.append(f"{'Bay' if IS_EN else 'Schacht'} {bay_mapping[dev]}")
         info = lsblk_scsi.get(dev, {})
         if info.get("model"):
             parts.append(info["model"])
@@ -1372,12 +1430,12 @@ if mode == "weekly-short":
 elif mode == "monthly-long":
     mode_label = tr("Monatlicher Langtest", "Monthly long test")
 elif mode == "report-only":
-    mode_label = tr("Report-Only (ohne Tests)", "Report-only (no tests)")
+    mode_label = tr("Nur Bericht (ohne Tests)", "Report only (no tests)")
 else:
     mode_label = mode
 
 if notice_type == "already-running":
-    subject = f"[{tag}] {tr('SMART-Report', 'SMART report')} – {tr('Start abgebrochen, SMART-Test läuft bereits', 'Start aborted, SMART test already running')} [WARN]"
+    subject = f"[{tag}] {tr('SMART-Bericht', 'SMART report')} – {tr('Start abgebrochen, SMART-Test läuft bereits', 'Start aborted, SMART test already running')} [{tr('WARNUNG', 'WARNING')}]"
     heading = tr("SMART-Test bereits aktiv", "SMART test already active")
     intro = tr(
         "Ein neuer SMART-Test wurde nicht gestartet, weil bereits mindestens ein SMART-Test aktiv ist.",
@@ -1389,7 +1447,7 @@ if notice_type == "already-running":
         "No new tests were started. Please wait until the running tests are finished or use --report-only if needed."
     )
 else:
-    subject = f"[{tag}] {tr('SMART-Report', 'SMART report')} – {tr('Hinweis', 'Notice')} [WARN]"
+    subject = f"[{tag}] {tr('SMART-Bericht', 'SMART report')} – {tr('Hinweis', 'Notice')} [{tr('WARNUNG', 'WARNING')}]"
     heading = tr("SMART-Hinweis", "SMART notice")
     intro = tr("Es gibt einen Hinweis zum SMART-Skriptlauf.", "There is a notice about the SMART script run.")
     details_label = tr("Details", "Details")
@@ -1468,7 +1526,7 @@ abort_if_running_tests_exist() {
   running_list="$(printf '%s\n' "${running_devices[@]}")"
 
   if [ "$ABORT_RUNNING_TESTS_BEFORE_START" = "true" ]; then
-    log "$(tr_text "WARN: Es laufen bereits SMART-Tests. Versuche diese vor dem Neustart abzubrechen ..." "WARN: SMART tests are already running. Trying to abort them before restarting ...")"
+    log "$(tr_text "WARN: Es laufen bereits SMART-Tests. Versuche diese vor dem Start des neuen Testlaufs abzubrechen ..." "WARN: SMART tests are already running. Trying to abort them before starting the new test run ...")"
     local dev
     for dev in "${running_devices[@]}"; do
       [ -n "$dev" ] || continue
@@ -1513,7 +1571,7 @@ send_smart_report_python() {
   NVME_ABORTED_DRIVES="${nvme_aborted_export}" \
   NVME_ABORT_FAILED_DRIVES="${nvme_abort_failed_export}" \
   "$PYTHON_BIN" -u - "$mode" "$raw_model" "$model_override" "$custom_name" "$emmc_check" "$emmc_read" <<'PYEOF'
-import subprocess, json, datetime, smtplib, sys, os, re
+import subprocess, json, datetime, smtplib, sys, os, re, time
 from email.mime.text import MIMEText
 
 mode = sys.argv[1]
@@ -1547,6 +1605,20 @@ IS_EN = str(LANGUAGE).lower().startswith("en")
 
 def tr(de: str, en: str) -> str:
     return en if IS_EN else de
+
+
+def progress_log(de: str, en: str) -> None:
+    msg = tr(de, en)
+    fmt = "%Y-%m-%d %H:%M:%S" if IS_EN else "%d.%m.%Y %H:%M:%S"
+    line = f"[{datetime.datetime.now().strftime(fmt)}] {msg}"
+    print(line, flush=True)
+    log_file = os.environ.get("LOG_FILE", "")
+    if log_file:
+        try:
+            with open(log_file, "a", encoding="utf-8") as fh:
+                fh.write(line + "\n")
+        except Exception:
+            pass
 
 def run(cmd, timeout=10):
     try:
@@ -1585,9 +1657,13 @@ def normalize_model(raw: str) -> str:
         return "DH2300"
     if "DH4300PLUS" in tokens:
         return "DH4300PLUS"
+    if "DXP2800GT" in tokens or ("DXP2800" in tokens and " GT" in r):
+        return "DXP2800GT"
     if "DXP2800" in tokens:
         return "DXP2800"
-    # DXP4800 (ohne Plus/T)
+    # DXP4800
+    if "DXP4800GT" in tokens or ("DXP4800" in tokens and " GT" in r):
+        return "DXP4800GT"
     if "DXP4800PRO" in tokens or ("DXP4800" in tokens and " PRO" in r):
         return "DXP4800PRO"
     if "DXP4800PLUS" in tokens:
@@ -1595,18 +1671,22 @@ def normalize_model(raw: str) -> str:
     if "DXP4800" in tokens:
         return "DXP4800"
     # 6800
+    if "DXP6800ULTRA" in tokens or ("DXP6800" in tokens and " ULTRA" in r):
+        return "DXP6800ULTRA"
     if "DXP6800PRO" in tokens or ("DXP6800" in tokens and " PRO" in r):
         return "DXP6800PRO"
     if "DXP6800PLUS" in tokens:
         return "DXP6800PLUS"
     # 8800
+    if "DXP8800ULTRA" in tokens or ("DXP8800" in tokens and " ULTRA" in r):
+        return "DXP8800ULTRA"
     if "DXP8800PRO" in tokens or ("DXP8800" in tokens and " PRO" in r):
         return "DXP8800PRO"
     if "DXP8800PLUS" in tokens:
         return "DXP8800PLUS"
 
     # Fallback: aus raw irgendwas Sinnvolles
-    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4}T?PLUS|DX[0-9]{4}PRO|DX[0-9]{4})", tokens)
+    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}ULTRA|DXP[0-9]{4}GT|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4}T?PLUS|DX[0-9]{4}PRO|DX[0-9]{4})", tokens)
     if m:
         return m.group(1)
     return "UGREEN"
@@ -1617,14 +1697,18 @@ FEATURES = {
     "DH2300":        {"hdd_bays": 2, "emmc": True,  "nvme": 0, "os_on_nvme": False},
     "DH4300PLUS":    {"hdd_bays": 4, "emmc": True,  "nvme": 0, "os_on_nvme": False},
     "DXP2800":       {"hdd_bays": 2, "emmc": True,  "nvme": 2, "os_on_nvme": False},
+    "DXP2800GT":     {"hdd_bays": 2, "emmc": True,  "nvme": 4, "os_on_nvme": False},
     "DXP4800":       {"hdd_bays": 4, "emmc": True,  "nvme": 2, "os_on_nvme": False},
+    "DXP4800GT":     {"hdd_bays": 4, "emmc": True,  "nvme": 4, "os_on_nvme": False},
     "DX4700":        {"hdd_bays": 4, "emmc": True,  "nvme": 2, "os_on_nvme": False},
     "DXP4800PRO":    {"hdd_bays": 4, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "DXP4800PLUS":   {"hdd_bays": 4, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "DXP6800PLUS":   {"hdd_bays": 6, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "DXP6800PRO":    {"hdd_bays": 6, "emmc": False, "nvme": 3, "os_on_nvme": True},
+    "DXP6800ULTRA":  {"hdd_bays": 6, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "DXP8800PLUS":   {"hdd_bays": 8, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "DXP8800PRO":    {"hdd_bays": 8, "emmc": False, "nvme": 3, "os_on_nvme": True},
+    "DXP8800ULTRA":  {"hdd_bays": 8, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "IDX6011":       {"hdd_bays": 6, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "IDX6011PRO":    {"hdd_bays": 6, "emmc": False, "nvme": 3, "os_on_nvme": True},
     "DXP480TPLUS":   {"hdd_bays": 0, "emmc": False, "nvme": 5, "os_on_nvme": True},
@@ -1885,7 +1969,7 @@ def drive_label(dev: str, is_nvme: bool = False) -> str:
     if not is_nvme:
         bay = bay_mapping.get(dev)
         if bay is not None:
-            parts.append(f"Bay {bay}")
+            parts.append(f"{tr('Schacht', 'Bay')} {bay}")
         info = lsblk_scsi.get(dev, {})
         model = (info.get("model") or "").strip()
         serial = (info.get("serial") or "").strip()
@@ -1922,17 +2006,46 @@ def _fixed_system_nvme_slot(model: str, has_system: bool) -> int:
 
 system_nvme_slot = _fixed_system_nvme_slot(MODEL, bool(sys_nvme_ctrl and sys_nvme_ctrl in nvme_devices))
 
+
+def nvme_by_path_name(dev: str) -> str:
+    """Return the stable /dev/disk/by-path name for an NVMe controller."""
+    m = re.match(r"^/dev/(nvme\d+)$", dev or "")
+    if not m:
+        return ""
+    disk_node = f"/dev/{m.group(1)}n1"
+    rc, out, _ = run(
+        ["bash", "-lc", "ls -1 /dev/disk/by-path/*nvme-* 2>/dev/null | grep -v part | sort"],
+        timeout=5,
+    )
+    for path in out.splitlines():
+        rc2, real, _ = run(["readlink", "-f", path], timeout=5)
+        if (real or "").strip() == disk_node:
+            return os.path.basename(path.strip())
+    return ""
+
+
+def nvme_user_label(dev: str, generic_index: int) -> str:
+    """Use verified physical U.2 labels on DXP4800 GT; otherwise a safe logical label."""
+    path_name = nvme_by_path_name(dev)
+    if MODEL == "DXP4800GT":
+        if "pci-0000:01:00.0-nvme-1" in path_name:
+            return tr("U.2-Schacht 1", "U.2 Bay 1")
+        if "pci-0000:02:00.0-nvme-1" in path_name:
+            return tr("U.2-Schacht 2", "U.2 Bay 2")
+        return tr(f"M.2-NVMe {generic_index}", f"M.2 NVMe {generic_index}")
+    return f"NVME{generic_index}"
+
 nvme_label_map = {}
 user_slot_idx = 1
 for dev in report_nvme_devices:
     if sys_nvme_ctrl and dev == sys_nvme_ctrl:
 
         nvme_label_map[dev] = (
-            f"NVME{system_nvme_slot} {tr('Systemdisk', 'System disk')}"
-            if system_nvme_slot else tr('Systemdisk', 'System disk')
+            f"NVME{system_nvme_slot} {tr('Systemlaufwerk', 'System drive')}"
+            if system_nvme_slot else tr('Systemlaufwerk', 'System drive')
         )
     else:
-        nvme_label_map[dev] = f"NVME{user_slot_idx}"
+        nvme_label_map[dev] = nvme_user_label(dev, user_slot_idx)
         user_slot_idx += 1
 
 def _nvme_disk_node(dev: str) -> str:
@@ -1984,18 +2097,21 @@ def _raw_attr(attr_tbl, attr_id):
 def _read_hdd(dev, label, base_note=""):
     j = smartctl_json(["-a", dev])
     if not j:
-        note = base_note or tr("Kein SMART-Output", "No SMART output")
-        if base_note and tr("Kein SMART-Output", "No SMART output") not in note:
-            note = f"{base_note}, {tr('kein SMART-Output', 'no SMART output')}"
-        return {"dev": dev, "label": label, "health": "N/A", "temp": "", "realloc": "", "pending": "", "uncor": "", "crc": "", "note": note}
+        note = base_note or tr("Keine SMART-Ausgabe", "No SMART output")
+        if base_note and tr("Keine SMART-Ausgabe", "No SMART output") not in note:
+            note = f"{base_note}, {tr('keine SMART-Ausgabe', 'no SMART output')}"
+        return {"dev": dev, "label": label, "health": tr("Nicht verfügbar", "Not available"), "health_state": "na", "temp": "", "realloc": "", "pending": "", "uncor": "", "crc": "", "note": note}
 
     passed = j.get("smart_status", {}).get("passed", None)
     if passed is True:
-        health = "PASSED"
+        health = tr("BESTANDEN", "PASSED")
+        health_state = "passed"
     elif passed is False:
-        health = "FAILED"
+        health = tr("FEHLER", "FAILED")
+        health_state = "failed"
     else:
         health = tr("Unbekannt", "Unknown")
+        health_state = "unknown"
 
     temp = ""
     if "temperature" in j:
@@ -2015,7 +2131,7 @@ def _read_hdd(dev, label, base_note=""):
     uncor   = _raw_attr(attr_tbl, 198)
     crc     = _raw_attr(attr_tbl, 199)
 
-    return {"dev": dev, "label": label, "health": health, "temp": temp, "realloc": realloc, "pending": pending, "uncor": uncor, "crc": crc, "note": base_note or ""}
+    return {"dev": dev, "label": label, "health": health, "health_state": health_state, "temp": temp, "realloc": realloc, "pending": pending, "uncor": uncor, "crc": crc, "note": base_note or ""}
 
 def collect_hdd():
     rows = []
@@ -2029,7 +2145,7 @@ def collect_hdd():
         bay = host + 1
         dev = host_to_dev.get(host) or host_placeholder.get(host)
         if dev is None:
-            rows.append({"dev": "", "label": f"Bay {bay}", "health": tr("Kein Laufwerk", "No drive"), "temp": "", "realloc": "", "pending": "", "uncor": "", "crc": "", "note": tr("Kein Laufwerk im Schacht", "No drive in bay")})
+            rows.append({"dev": "", "label": f"{tr('Schacht', 'Bay')} {bay}", "health": tr("Kein Laufwerk", "No drive"), "health_state": "empty", "temp": "", "realloc": "", "pending": "", "uncor": "", "crc": "", "note": tr("Kein Laufwerk im Schacht", "No drive in bay")})
             continue
         label = drive_label(dev, False)
         rows.append(_read_hdd(dev, label))
@@ -2047,6 +2163,7 @@ def collect_usb():
                 "dev": dev,
                 "label": label,
                 "health": tr("Nicht unterstützt", "Not supported"),
+                "health_state": "unsupported",
                 "temp": "",
                 "realloc": 0,
                 "pending": 0,
@@ -2079,11 +2196,12 @@ def collect_nvme():
 
         j = smartctl_json(["-a", "-d", "nvme", dev])
         if not j:
-            note_parts.append(tr("Kein SMART-Output", "No SMART output"))
+            note_parts.append(tr("Keine SMART-Ausgabe", "No SMART output"))
             rows.append({
                 "dev": dev,
                 "label": label,
-                "health": "N/A",
+                "health": tr("Nicht verfügbar", "Not available"),
+                "health_state": "na",
                 "temp": "",
                 "life_left": "",
                 "media_err": "",
@@ -2095,13 +2213,15 @@ def collect_nvme():
             continue
 
         health = "OK"
+        health_state = "ok"
         crit = j.get("critical_warning", 0)
         try:
             crit_val = int(crit)
         except Exception:
             crit_val = 0
         if crit_val != 0:
-            health = "WARN"
+            health = tr("WARNUNG", "WARNING")
+            health_state = "warn"
 
         temp = ""
         if "temperature" in j:
@@ -2122,6 +2242,7 @@ def collect_nvme():
             "dev": dev,
             "label": label,
             "health": health,
+            "health_state": health_state,
             "temp": temp,
             "life_left": life_left,
             "media_err": media_err,
@@ -2140,7 +2261,8 @@ nvme_rows = collect_nvme()
 # eMMC Check
 # --------------------------------------------------
 emmc_rows = []
-emmc_status = "N/A"
+emmc_status = tr("Nicht verfügbar", "Not available")
+emmc_state = "na"
 emmc_note = ""
 emmc_dd_summary = ""
 emmc_overlay = ""
@@ -2178,39 +2300,85 @@ if emmc_check and emmc_present:
     if not emmc_overlay.startswith("/dev/"):
         emmc_overlay = "/dev/mmcblk0p9" if os.path.exists("/dev/mmcblk0p9") else ""
 
-    # Read-Test
+    # eMMC-Lesetest / eMMC read test
     if emmc_read and emmc_overlay:
-        # dd output geht nach stderr; wir speichern die Summary
-        rc, _, err = run(["dd", f"if={emmc_overlay}", "of=/dev/null", "bs=4M"], timeout=900)
-        # Summary ist meist letzte Zeile mit "copied"
-        summary = ""
-        for ln in (err or "").splitlines()[::-1]:
-            if "copied" in ln:
-                summary = ln.strip()
-                break
-        emmc_dd_summary = summary or (err.strip().splitlines()[-1] if err.strip().splitlines() else "")
+        size_bytes = 0
+        rc_size, out_size, _ = run(["blockdev", "--getsize64", emmc_overlay], timeout=10)
+        if rc_size == 0:
+            try:
+                size_bytes = int(first_line(out_size))
+            except Exception:
+                size_bytes = 0
+
+        size_hint = ""
+        if size_bytes > 0:
+            size_hint = f" ({size_bytes / (1024 ** 3):.1f} GiB)"
+        progress_log(
+            f"Starte vollständigen eMMC-Lesetest auf {emmc_overlay}{size_hint}. Der Vorgang kann einige Minuten dauern ...",
+            f"Starting full eMMC read test on {emmc_overlay}{size_hint}. This may take several minutes ...",
+        )
+
+        started = time.monotonic()
+        try:
+            proc = subprocess.run(
+                ["dd", f"if={emmc_overlay}", "of=/dev/null", "bs=4M", "status=none"],
+                capture_output=True,
+                text=True,
+                timeout=900,
+                check=False,
+            )
+            rc = proc.returncode
+        except Exception:
+            rc = 999
+        elapsed = max(0.001, time.monotonic() - started)
+
         if rc == 0:
             emmc_status = "OK"
+            emmc_state = "ok"
+            if size_bytes > 0:
+                decimal_gb = size_bytes / 1_000_000_000
+                binary_gib = size_bytes / (1024 ** 3)
+                rate_mb = (size_bytes / elapsed) / 1_000_000
+                emmc_dd_summary = tr(
+                    f"{size_bytes} Bytes ({decimal_gb:.1f} GB, {binary_gib:.1f} GiB) gelesen, {elapsed:.3f} s, {rate_mb:.0f} MB/s",
+                    f"{size_bytes} bytes ({decimal_gb:.1f} GB, {binary_gib:.1f} GiB) read, {elapsed:.3f} s, {rate_mb:.0f} MB/s",
+                )
+            else:
+                emmc_dd_summary = tr("Lesetest erfolgreich abgeschlossen", "Read test completed successfully")
+            progress_log(
+                f"eMMC-Lesetest auf {emmc_overlay} erfolgreich abgeschlossen ({elapsed:.1f} Sekunden).",
+                f"eMMC read test on {emmc_overlay} completed successfully ({elapsed:.1f} seconds).",
+            )
         else:
-            emmc_status = "CRIT"
-            emmc_note = f"dd exit code: {rc}"
+            progress_log(
+                f"WARNUNG: eMMC-Lesetest auf {emmc_overlay} fehlgeschlagen (dd-Exitcode {rc}).",
+                f"WARNING: eMMC read test on {emmc_overlay} failed (dd exit code {rc}).",
+            )
+            emmc_status = tr("KRITISCH", "CRITICAL")
+            emmc_state = "crit"
+            emmc_note = tr(f"dd-Exitcode: {rc}", f"dd exit code: {rc}")
     else:
-        emmc_status = "OK"
         if emmc_read_skipped_report_only:
-            emmc_note = tr("Im Report-Only-Modus übersprungen", "Skipped in report-only mode")
+            emmc_status = tr("Übersprungen", "Skipped")
+            emmc_state = "skipped"
+            emmc_note = tr("Im Modus „Nur Bericht“ nicht ausgeführt", "Not performed in report-only mode")
         else:
-            emmc_note = tr("Read-Test deaktiviert", "Read test disabled")
+            emmc_status = tr("Deaktiviert", "Disabled")
+            emmc_state = "disabled"
+            emmc_note = tr("eMMC-Lesetest deaktiviert", "eMMC read test disabled")
 
     # Kernel errors (seit Boot)
     rc, out, _ = run(["dmesg", "-T"], timeout=10)
     emmc_errors = filter_emmc_errors(out)
 
 elif emmc_check and not emmc_present:
-    emmc_status = "N/A"
+    emmc_status = tr("Nicht vorhanden", "Not present")
+    emmc_state = "absent"
     emmc_note = tr("Keine eMMC vorhanden", "No eMMC present")
 else:
-    emmc_status = "N/A"
-    emmc_note = tr("eMMC Check deaktiviert", "eMMC check disabled")
+    emmc_status = tr("Deaktiviert", "Disabled")
+    emmc_state = "disabled"
+    emmc_note = tr("eMMC-Prüfung deaktiviert", "eMMC check disabled")
 
 # --------------------------------------------------
 # Gesamtstatus (Warnlogik)
@@ -2223,7 +2391,7 @@ def bump_status(new_level):
         status_level = new_level
 
 for r in hdd_rows + usb_rows:
-    if str(r.get("health")) == "FAILED":
+    if r.get("health_state") == "failed":
         bump_status("CRIT")
         continue
     for key, thr in (("realloc", 0), ("pending", 0), ("uncor", 0)):
@@ -2235,8 +2403,7 @@ for r in hdd_rows + usb_rows:
         bump_status("WARN")
 
 for r in nvme_rows:
-    health = str(r.get("health") or "")
-    if health not in ("", "OK", "N/A"):
+    if r.get("health_state") == "warn":
         bump_status("WARN")
     media_err = r.get("media_err")
     err_log   = r.get("err_log")
@@ -2252,7 +2419,7 @@ for r in nvme_rows:
 
 # eMMC Status einbeziehen
 if emmc_check and emmc_present and emmc_read:
-    if emmc_status == "CRIT":
+    if emmc_state == "crit":
         bump_status("CRIT")
 if emmc_errors:
     bump_status("WARN")
@@ -2262,13 +2429,18 @@ if mode == "weekly-short":
 elif mode == "monthly-long":
     mode_label = tr("Monatlicher Langtest", "Monthly long test")
 elif mode == "report-only":
-    mode_label = tr("Report-Only (ohne Tests)", "Report-only (no tests)")
+    mode_label = tr("Nur Bericht (ohne Tests)", "Report only (no tests)")
 else:
     mode_label = mode
 
 subject_tag = display_name()
-report_title = tr("SMART-Report", "SMART report")
-subject = f"[{subject_tag}] {report_title} – {mode_label} [{status_level}]"
+report_title = tr("SMART-Bericht", "SMART report")
+status_label = {
+    "OK": "OK",
+    "WARN": tr("WARNUNG", "WARNING"),
+    "CRIT": tr("KRITISCH", "CRITICAL"),
+}.get(status_level, status_level)
+subject = f"[{subject_tag}] {report_title} – {mode_label} [{status_label}]"
 
 def esc(s):
     return "" if s is None else str(s)
@@ -2286,7 +2458,7 @@ html_parts.append(f"<title>{esc(subject)}</title>")
 html_parts.append('</head><body style="font-family:Segoe UI,Arial,sans-serif;font-size:13px;color:#333333;">')
 
 
-html_parts.append(f'<h2 style="font-weight:600;font-size:18px;margin-bottom:4px;">{esc(tr("SMART-Report für", "SMART report for"))} {esc(subject_tag)}</h2>')
+html_parts.append(f'<h2 style="font-weight:600;font-size:18px;margin-bottom:4px;">{esc(tr("SMART-Bericht für", "SMART report for"))} {esc(subject_tag)}</h2>')
 
 hdd_count = len([d for d in internal_hdd_devices if d])
 usb_hdd_count = len([d for d in usb_hdd_devices if d])
@@ -2303,18 +2475,19 @@ html_parts.append(
     f'<p style="margin-top:0;margin-bottom:10px;">'
 
     f'{esc(tr("Modus", "Mode"))}: {esc(mode_label)}<br />'
-    f'{esc(tr("Status", "Status"))}: <strong>{esc(status_level)}</strong><br />'
+    f'{esc(tr("Status", "Status"))}: <strong>{esc(status_label)}</strong><br />'
     f'{esc(tr("Zeitpunkt", "Timestamp"))}: {esc(NOW)}<br />'
     f'{esc(tr("Erkanntes Modell", "Detected model"))}: {esc(MODEL)}<br />'
-    f'{esc(tr("Anzahl Bays (HDD, ermittelt)", "Number of bays (HDD, detected)"))}: {esc(bay_count_display)}'
-    + (f' ({esc(tr("erwartet", "expected"))}: {exp_hdd})' if isinstance(exp_hdd, int) else '') + '<br />'
-    f'{esc(tr("Anzahl HDDs (intern gefunden)", "Number of internal HDDs (found)"))}: {esc(hdd_count)}<br />'
+    f'{esc(tr("Anzahl HDD-Schächte (ermittelt)", "Number of HDD bays (detected)"))}: {esc(bay_count_display)}'
+    + (f' ({esc(tr("Modellvorgabe", "model specification"))}: {exp_hdd})' if isinstance(exp_hdd, int) else '') + '<br />'
+    f'{esc(tr("Anzahl interner HDDs", "Number of internal HDDs"))}: {esc(hdd_count)}<br />'
     f'{esc(tr("USB-Laufwerke einbeziehen", "Include USB drives"))}: {esc(tr("Ja", "Yes") if include_usb else tr("Nein", "No"))}<br />'
-    + (f'{esc(tr("Anzahl USB-/Wechsellaufwerke (gefunden)", "Number of USB/removable drives (found)"))}: {esc(usb_hdd_count)}<br />' if include_usb else '')
-    + (f'{esc(tr("Davon ohne SMART-Selbsttest (USB-Sticks/SD-Karten)", "Of these without SMART self-test (USB flash drives/SD cards)"))}: {esc(usb_excluded_count)}<br />' if include_usb and usb_hdd_count > 0 else '')
-    + f'{esc(tr("Anzahl NVMe (gefunden)", "Number of NVMe drives (found)"))}: {esc(nvme_count)}'
-    + (f' ({esc(tr("erwartet", "expected"))}: {exp_nvme})' if isinstance(exp_nvme, int) else '') + '<br />'
-    f'{esc(tr("Systemdisk", "System disk"))}: {esc(sys_base or tr("Unbekannt", "Unknown"))}<br />'
+    + (f'{esc(tr("Anzahl gefundener USB-/Wechsellaufwerke", "Number of USB/removable drives found"))}: {esc(usb_hdd_count)}<br />' if include_usb else '')
+    + (f'{esc(tr("Davon ohne SMART-Selbsttest (USB-Sticks/SD-Karten)", "Without SMART self-test support (USB flash drives/SD cards)"))}: {esc(usb_excluded_count)}<br />' if include_usb and usb_hdd_count > 0 else '')
+    + f'{esc(tr("Anzahl gefundener NVMe-Laufwerke", "Number of NVMe drives found"))}: {esc(nvme_count)}<br />'
+    + (f'{esc(tr("Maximal unterstützte NVMe-Laufwerke", "Maximum supported NVMe drives"))}: {exp_nvme}<br />' if isinstance(exp_nvme, int) else '')
+    + (f'{esc(tr("NVMe-Ausstattung", "NVMe configuration"))}: {esc(tr("2 × M.2-Steckplätze und bis zu 2 × U.2-Kombischächte", "2 × M.2 slots and up to 2 × U.2 combo bays"))}<br />' if MODEL in ("DXP2800GT", "DXP4800GT") else '')
+    + f'{esc(tr("Systemlaufwerk", "System drive"))}: {esc(sys_base or tr("Unbekannt", "Unknown"))}<br />'
     f'eMMC {esc(tr("vorhanden", "present"))}: {esc(tr("Ja", "Yes") if emmc_present else tr("Nein", "No"))}'
     f'</p>'
 )
@@ -2329,7 +2502,14 @@ html_parts.append('<table style="border-collapse:collapse;width:100%;max-width:1
 html_parts.append("<tr>")
 
 for name in (
-    tr("Laufwerk", "Drive"), "Health", "Temp (°C)", "Realloc", "Pending", "Uncorr", "CRC", tr("Hinweis", "Note")
+    tr("Laufwerk", "Drive"),
+    tr("Zustand", "Health"),
+    tr("Temperatur (°C)", "Temperature (°C)"),
+    tr("Neu zugewiesen", "Reallocated"),
+    tr("Ausstehend", "Pending"),
+    tr("Nicht korrigierbar", "Uncorrectable"),
+    "CRC",
+    tr("Hinweis", "Note"),
 ):
     html_parts.append(f'<th style="padding:5px 7px;border:1px solid #dddddd;background-color:#f3f3f3;font-size:12px;">{name}</th>')
 html_parts.append("</tr>")
@@ -2338,7 +2518,7 @@ if hdd_rows:
     for r in hdd_rows:
         html_parts.append("<tr>")
         html_parts.append(td(r["label"]))
-        html_parts.append(td(r["health"], highlight=(r["health"] == "FAILED")))
+        html_parts.append(td(r["health"], highlight=(r.get("health_state") == "failed")))
         html_parts.append(td(r["temp"]))
         html_parts.append(td(r["realloc"], highlight=isinstance(r["realloc"], int) and r["realloc"] > 0))
         html_parts.append(td(r["pending"], highlight=isinstance(r["pending"], int) and r["pending"] > 0))
@@ -2360,7 +2540,14 @@ if include_usb and usb_rows:
     html_parts.append("<tr>")
 
     for name in (
-        tr("Laufwerk", "Drive"), "Health", "Temp (°C)", "Realloc", "Pending", "Uncorr", "CRC", tr("Hinweis", "Note")
+        tr("Laufwerk", "Drive"),
+        tr("Zustand", "Health"),
+        tr("Temperatur (°C)", "Temperature (°C)"),
+        tr("Neu zugewiesen", "Reallocated"),
+        tr("Ausstehend", "Pending"),
+        tr("Nicht korrigierbar", "Uncorrectable"),
+        "CRC",
+        tr("Hinweis", "Note"),
     ):
         html_parts.append(f'<th style="padding:5px 7px;border:1px solid #dddddd;background-color:#f3f3f3;font-size:12px;">{name}</th>')
     html_parts.append("</tr>")
@@ -2368,7 +2555,7 @@ if include_usb and usb_rows:
     for r in usb_rows:
         html_parts.append("<tr>")
         html_parts.append(td(r["label"]))
-        html_parts.append(td(r["health"], highlight=(r["health"] == "FAILED")))
+        html_parts.append(td(r["health"], highlight=(r.get("health_state") == "failed")))
         html_parts.append(td(r["temp"]))
         html_parts.append(td(r["realloc"], highlight=isinstance(r["realloc"], int) and r["realloc"] > 0))
         html_parts.append(td(r["pending"], highlight=isinstance(r["pending"], int) and r["pending"] > 0))
@@ -2386,14 +2573,22 @@ if nvme_rows:
     html_parts.append('<table style="border-collapse:collapse;width:100%;max-width:1000px;">')
     html_parts.append("<tr>")
 
-    for name in (tr("Laufwerk", "Drive"), "Health", "Temp (°C)", tr("Restlebensdauer (%)", "Remaining life (%)"), "Media Errors", "Error Log", tr("Hinweis", "Note")):
+    for name in (
+        tr("Laufwerk", "Drive"),
+        tr("Zustand", "Health"),
+        tr("Temperatur (°C)", "Temperature (°C)"),
+        tr("Restlebensdauer (%)", "Remaining life (%)"),
+        tr("Medienfehler", "Media errors"),
+        tr("Fehlerprotokolleinträge", "Error log entries"),
+        tr("Hinweis", "Note"),
+    ):
         html_parts.append(f'<th style="padding:5px 7px;border:1px solid #dddddd;background-color:#f3f3f3;font-size:12px;">{name}</th>')
     html_parts.append("</tr>")
 
     for r in nvme_rows:
         html_parts.append("<tr>")
         html_parts.append(td(r["label"]))
-        html_parts.append(td(r["health"], highlight=(str(r["health"]) not in ("OK", "N/A", ""))))
+        html_parts.append(td(r["health"], highlight=(r.get("health_state") == "warn")))
         html_parts.append(td(r["temp"]))
         life_left = r["life_left"]
         html_parts.append(td(life_left, highlight=isinstance(life_left, int) and life_left <= 10))
@@ -2412,7 +2607,15 @@ if emmc_check and emmc_present:
     html_parts.append('<table style="border-collapse:collapse;width:100%;max-width:1000px;">')
     html_parts.append("<tr>")
 
-    for name in ("Device", tr("Name", "Name"), "CID", tr("Overlay-Device", "Overlay device"), tr("Read-Test", "Read test"), "dd Summary", tr("Kernel-Errors", "Kernel errors")):
+    for name in (
+        tr("Gerät", "Device"),
+        tr("Name", "Name"),
+        "CID",
+        tr("Overlay-Gerät", "Overlay device"),
+        tr("Lesetest", "Read test"),
+        tr("dd-Zusammenfassung", "dd summary"),
+        tr("Kernel-Fehler", "Kernel errors"),
+    ):
         html_parts.append(f'<th style="padding:5px 7px;border:1px solid #dddddd;background-color:#f3f3f3;font-size:12px;">{name}</th>')
     html_parts.append("</tr>")
 
@@ -2422,14 +2625,14 @@ if emmc_check and emmc_present:
     html_parts.append(td(emmc_name or ""))
     html_parts.append(td(emmc_cid or ""))
     html_parts.append(td(emmc_overlay or ""))
-    html_parts.append(td(emmc_status, highlight=(emmc_status == "CRIT")))
+    html_parts.append(td(emmc_status, highlight=(emmc_state == "crit")))
     html_parts.append(td(emmc_dd_summary or emmc_note or ""))
     html_parts.append(td(kerr, highlight=bool(emmc_errors)))
     html_parts.append("</tr>")
     html_parts.append("</table>")
 
 
-html_parts.append(f'<p style="margin-top:18px;font-size:11px;color:#777777;">{esc(tr("Hinweis", "Note"))}: {esc(tr("Dieser Report wurde automatisch vom Skript ugreen-smart-report.sh", "This report was generated automatically by the script ugreen-smart-report.sh"))} v{SCRIPT_VERSION}.</p>')
+html_parts.append(f'<p style="margin-top:18px;font-size:11px;color:#777777;">{esc(tr("Hinweis", "Note"))}: {esc(tr("Dieser Bericht wurde automatisch vom Skript ugreen-smart-report.sh erstellt", "This report was generated automatically by the script ugreen-smart-report.sh"))} v{SCRIPT_VERSION}.</p>')
 html_parts.append("</body></html>")
 
 html_body = "".join(html_parts)
@@ -2531,10 +2734,10 @@ def normalize_model(raw: str) -> str:
     if model_override.strip():
         return model_override.strip().upper()
     tokens = r.replace(" ", "")
-    for k in ("DXP480TPLUS","DXP8800PRO","DXP8800PLUS","DXP6800PRO","DXP6800PLUS","DXP4800PRO","DXP4800PLUS","DXP4800","DXP2800","IDX6011PRO","IDX6011","DH4300PLUS","DH2300"):
+    for k in ("DXP480TPLUS","DXP8800ULTRA","DXP8800PRO","DXP8800PLUS","DXP6800ULTRA","DXP6800PRO","DXP6800PLUS","DXP4800GT","DXP4800PRO","DXP4800PLUS","DXP4800","DXP2800GT","DXP2800","IDX6011PRO","IDX6011","DH4300PLUS","DH2300","DX4700"):
         if k in tokens:
             return k
-    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4})", tokens)
+    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}ULTRA|DXP[0-9]{4}GT|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4})", tokens)
     return m.group(1) if m else "UGREEN"
 
 MODEL = normalize_model(raw_model)
@@ -2614,10 +2817,10 @@ def normalize_model(raw: str) -> str:
     if model_override.strip():
         return model_override.strip().upper()
     tokens = r.replace(" ", "")
-    for k in ("DXP480TPLUS","DXP8800PRO","DXP8800PLUS","DXP6800PRO","DXP6800PLUS","DXP4800PRO","DXP4800PLUS","DXP4800","DXP2800","IDX6011PRO","IDX6011","DH4300PLUS","DH2300"):
+    for k in ("DXP480TPLUS","DXP8800ULTRA","DXP8800PRO","DXP8800PLUS","DXP6800ULTRA","DXP6800PRO","DXP6800PLUS","DXP4800GT","DXP4800PRO","DXP4800PLUS","DXP4800","DXP2800GT","DXP2800","IDX6011PRO","IDX6011","DH4300PLUS","DH2300","DX4700"):
         if k in tokens:
             return k
-    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4})", tokens)
+    m = re.search(r"(IDX[0-9]{4}PRO|IDX[0-9]{4}|DH[0-9]{4}PLUS|DH[0-9]{4}|DXP[0-9]{4}ULTRA|DXP[0-9]{4}GT|DXP[0-9]{4}T?PLUS|DXP[0-9]{4}PRO|DXP[0-9]{4}|DX[0-9]{4})", tokens)
     return m.group(1) if m else "UGREEN"
 
 MODEL = normalize_model(raw_model)
@@ -2682,7 +2885,7 @@ PYEOF
 require_root
 detect_python
 setup_logging
-export SMTP_SERVER SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM MAIL_TO SMTP_USE_TLS SMTP_USE_SSL SCRIPT_VERSION DEBUG_SMTP DEBUG_REPORT_MAIL DEBUG_SAVE_REPORT_HTML DEBUG_REPORT_DUMP_DIR INCLUDE_USB_DRIVES
+export SMTP_SERVER SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM MAIL_TO SMTP_USE_TLS SMTP_USE_SSL SCRIPT_VERSION DEBUG_SMTP DEBUG_REPORT_MAIL DEBUG_SAVE_REPORT_HTML DEBUG_REPORT_DUMP_DIR INCLUDE_USB_DRIVES LOG_FILE LANGUAGE
 
 detect_all_drives
 build_drive_label_cache
@@ -2724,7 +2927,7 @@ log "$(tr_text "USB-Laufwerke einbeziehen: ${INCLUDE_USB_DRIVES}" "Include USB d
 log "$(tr_text "SMTP-Debug aktiv: ${DEBUG_SMTP}" "SMTP debug enabled: ${DEBUG_SMTP}")"
 log "$(tr_text "Report-Debug aktiv: ${DEBUG_REPORT_MAIL}" "Report debug enabled: ${DEBUG_REPORT_MAIL}")"
 log "$(tr_text "Report-Dump aktiv: ${DEBUG_SAVE_REPORT_HTML}" "Report dump enabled: ${DEBUG_SAVE_REPORT_HTML}")"
-log "$(tr_text "Laufende Tests vor Neustart abbrechen: ${ABORT_RUNNING_TESTS_BEFORE_START}" "Abort running tests before restart: ${ABORT_RUNNING_TESTS_BEFORE_START}")"
+log "$(tr_text "Laufende Tests vor einem neuen Testlauf abbrechen: ${ABORT_RUNNING_TESTS_BEFORE_START}" "Abort running tests before starting a new test run: ${ABORT_RUNNING_TESTS_BEFORE_START}")"
 log "$(tr_text "Maximale NVMe-Wartezeit Short: ${NVME_MAX_WAIT_SHORT_MIN} Minuten" "Maximum NVMe wait time short: ${NVME_MAX_WAIT_SHORT_MIN} minutes")"
 log "$(tr_text "Maximale NVMe-Wartezeit Long: ${NVME_MAX_WAIT_LONG_MIN} Minuten" "Maximum NVMe wait time long: ${NVME_MAX_WAIT_LONG_MIN} minutes")"
 log "$(tr_text "NVMe-Stillstandserkennung aktiv: ${NVME_STALL_DETECTION}" "NVMe stall detection enabled: ${NVME_STALL_DETECTION}")"

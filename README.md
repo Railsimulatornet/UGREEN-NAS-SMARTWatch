@@ -1,4 +1,5 @@
 # UGREEN-NAS-SMARTWatch
+
 ![SMARTWatch](Screens/SMARTWatch.png)
 
 UGREEN-NAS-SMARTWatch ist ein leichtgewichtiges Bash-Skript für UGREEN NAS mit UGOS.  
@@ -29,40 +30,55 @@ Das Skript liest SMART-Werte von HDD-, NVMe-, USB- und eMMC-Laufwerken aus, kann
 ## Screenshots
 
 ### Deutsch (DE)
+
 | Outlook | Mobile Ansicht |
 |---|---|
 | ![SMARTWatch DE - Outlook](Screens/Outlook.jpg) | ![SMARTWatch DE - Mobile](Screens/Mobil.jpg) |
 
 ### Englisch (EN)
+
 | Outlook | Mobile Ansicht |
 |---|---|
 | ![SMARTWatch EN - Outlook](Screens/OutlookEN.jpg) | ![SMARTWatch EN - Mobile](Screens/MobileEN.jpg) |
 
+## Unterstützte UGREEN-NAS-Modelle
 
-## Projektstruktur
+UGREEN-NAS-SMARTWatch ist für UGREEN NAS mit UGOS optimiert. Folgende Modelle werden derzeit ausdrücklich erkannt und unterstützt:
 
-```text
-UGREEN-NAS-SMARTWatch/
-├─ LICENSE
-├─ README.md
-├─ RELEASE_NOTES_v5.00.md
-├─ UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf
-├─ Screens/
-│  ├─ SMARTWatch.png
-│  ├─ SMARTWatch1280.jpg
-│  ├─ SMARTWatchEN.png
-│  ├─ Outlook.jpg
-│  ├─ OutlookEN.jpg
-│  ├─ Mobil.jpg
-│  └─ MobileEN.jpg
-└─ SmartWatch/
-   ├─ ugreen-smart-report.sh
-   └─ smart-report.env.example
-```
+### DH-Serie
+
+- DH2300
+- DH4300 Plus
+
+### DX- und iDX-Serie
+
+- DX4700
+- iDX6011
+- iDX6011 Pro
+
+### DXP-Serie
+
+- DXP2800
+- DXP2800 GT
+- DXP4800
+- DXP4800 Plus
+- DXP4800 Pro
+- DXP4800 GT
+- DXP480T Plus
+- DXP6800 Plus
+- DXP6800 Pro
+- DXP6800 Ultra
+- DXP8800 Plus
+- DXP8800 Pro
+- DXP8800 Ultra
+
+Die GT-Serie unterstützt zusätzlich U.2-NVMe-Laufwerke. Beim DXP4800 GT können U.2-Schacht 1 und U.2-Schacht 2 physisch unterschieden werden.
+
+Andere UGREEN-NAS-Modelle mit UGOS können durch die allgemeine Laufwerkserkennung ebenfalls funktionieren, wurden jedoch noch nicht ausdrücklich verifiziert. Rückmeldungen zu weiteren Modellen sind willkommen.
 
 ## Voraussetzungen
 
-- UGREEN NAS mit UGOS
+- Unterstütztes UGREEN NAS mit UGOS
 
 ## Installation (Quickstart)
 
@@ -70,21 +86,25 @@ UGREEN-NAS-SMARTWatch/
 `/volume2/NASAdmin/Skripte/SmartWatch/`
 
 2) In den Ordner wechseln:
+
 ```bash
 cd /volume2/NASAdmin/Skripte/SmartWatch
 ```
 
 3) Beispielkonfiguration kopieren:
+
 ```bash
 cp smart-report.env.example smart-report.env
 ```
 
 4) Konfiguration anpassen:
+
 ```bash
 nano smart-report.env
 ```
 
 5) Skript ausführbar machen:
+
 ```bash
 chmod +x ugreen-smart-report.sh
 ```
@@ -92,26 +112,31 @@ chmod +x ugreen-smart-report.sh
 ## Test und Nutzung
 
 ### Testmail senden
+
 ```bash
 bash ./ugreen-smart-report.sh --test-mail
 ```
 
 ### Nur Report erzeugen
+
 ```bash
 bash ./ugreen-smart-report.sh --report-only
 ```
 
 ### Wöchentlichen Kurztest starten
+
 ```bash
 bash ./ugreen-smart-report.sh --weekly-short
 ```
 
 ### Monatlichen Langtest starten
+
 ```bash
 bash ./ugreen-smart-report.sh --monthly-long
 ```
 
 ### Hilfe anzeigen
+
 ```bash
 bash ./ugreen-smart-report.sh --help
 ```
@@ -136,7 +161,7 @@ Alle Einstellungen basieren auf der Datei:
 SmartWatch/smart-report.env.example
 ```
 
-Auf der NAS wird daraus deine aktive Konfiguration erstellt:
+Auf dem NAS wird daraus deine aktive Konfiguration erstellt:
 
 ```bash
 cp smart-report.env.example smart-report.env

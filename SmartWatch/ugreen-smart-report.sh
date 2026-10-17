@@ -174,6 +174,14 @@ EOF
   fi
 }
 
+# Help must not require privileges, touch logs, or inspect attached drives.
+case "${1:-}" in
+  --help|-h|--)
+    show_help
+    exit 0
+    ;;
+esac
+
 get_raw_model_string() {
   # Try to find the most informative model string available.
   # Sources: DMI (x86), Device-Tree (ARM), Kernel log (dmesg).
@@ -2893,10 +2901,6 @@ MODE="monthly-long"
 case "${1:-}" in
   "" )
     MODE="monthly-long"
-    ;;
-  --help|-h|--)
-    show_help
-    exit 0
     ;;
   --weekly-short)
     MODE="weekly-short"

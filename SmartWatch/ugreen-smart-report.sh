@@ -3,12 +3,12 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # Copyright Roman Glos 2026
 # ugreen-smart-report.sh
 # Unified SMART report script for UGREEN NAS (DE/EN via env)
-# Version 5.00
+# Version 5.00.1
 
 set -u
 
 SCRIPT_NAME="$(basename "$0")"
-SCRIPT_VERSION="5.00"
+SCRIPT_VERSION="5.00.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/smart-report.env}"
 

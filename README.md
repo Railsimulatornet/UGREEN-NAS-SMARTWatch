@@ -1,5 +1,7 @@
 # UGREEN-NAS-SMARTWatch
 
+[![Quality](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml)
+
 ![SMARTWatch](Screens/SMARTWatch.png)
 
 [Deutsch](#deutsch) | [English](#english)
@@ -93,7 +95,7 @@ Andere UGREEN-NAS-Modelle mit UGOS können durch die allgemeine Laufwerkserkennu
 
 ## Installation (Quickstart)
 
-1. Paket auf das NAS kopieren, zum Beispiel nach:
+1. Den Inhalt des Ordners `SmartWatch/` auf das NAS kopieren, zum Beispiel nach:
 
    ```text
    /volume2/NASAdmin/Skripte/SmartWatch/
@@ -220,7 +222,7 @@ MIT License
 
 ## Version
 
-- v5.00
+- v5.00.1
 
 ---
 
@@ -311,7 +313,7 @@ Other UGREEN NAS models running UGOS may also work through the generic drive det
 
 ## Installation (Quickstart)
 
-1. Copy the package to the NAS, for example to:
+1. Copy the contents of the `SmartWatch/` folder to the NAS, for example to:
 
    ```text
    /volume2/NASAdmin/Skripte/SmartWatch/
@@ -438,6 +440,6 @@ MIT License
 
 ## Version
 
-- v5.00
+- v5.00.1
 
 <!-- refresh contributors graph -->

@@ -63,7 +63,7 @@ Alle Pfade sind Beispiele und können an dein Volume angepasst werden.
 | `bash ./ugreen-smart-report.sh --weekly-short` | Kurztests starten und anschließend berichten. |
 | `bash ./ugreen-smart-report.sh --monthly-long` | Langtests starten und anschließend berichten. |
 
-**Ohne Parameter verhält sich das Skript wie `--monthly-long`.** Verwende für einen reinen Bericht deshalb ausdrücklich `--report-only`.
+**Ohne Parameter zeigt das Skript nur die Hilfe an.** Tests starten ausdrücklich mit `--weekly-short` oder `--monthly-long`. Für einen reinen Bericht verwende `--report-only`. Bestehende Cron-Aufrufe ohne Parameter vor dem Update auf den gewünschten Modus umstellen.
 
 Wöchentliche und monatliche Testläufe brechen ab, wenn bereits ein SMART-Test läuft. Mit `ABORT_RUNNING_TESTS_BEFORE_START=true` kannst du stattdessen den Abbruch laufender Tests vor einem neuen Lauf aktivieren.
 
@@ -203,7 +203,7 @@ All paths are examples and can be adjusted to your volume.
 | `bash ./ugreen-smart-report.sh --weekly-short` | Start short tests and report afterwards. |
 | `bash ./ugreen-smart-report.sh --monthly-long` | Start long tests and report afterwards. |
 
-**Without parameters, the script behaves like `--monthly-long`.** Explicitly use `--report-only` when you only want a report.
+**Without parameters, the script only shows help.** Start tests explicitly with `--weekly-short` or `--monthly-long`. Use `--report-only` for a report without a test. Before updating, add the intended mode to any existing cron command that has no arguments.
 
 Weekly and monthly test runs stop if a SMART test is already running. Setting `ABORT_RUNNING_TESTS_BEFORE_START=true` instead enables cancellation of running tests before a new run.
 

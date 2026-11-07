@@ -14,7 +14,7 @@ SCRIPT = Path(os.environ.get("SMARTWATCH_SOURCE", REPO / "SmartWatch/ugreen-smar
 class HelpTests(unittest.TestCase):
     def test_help_without_privileged_initialization(self):
         for language in ("de", "en"):
-            for option in ("--help", "-h", "--"):
+            for option in (None, "--help", "-h", "--"):
                 with self.subTest(language=language, option=option), tempfile.TemporaryDirectory() as temporary:
                     root = Path(temporary)
                     audit = root / "privilege-check"
@@ -25,9 +25,14 @@ class HelpTests(unittest.TestCase):
                     code = '''
 id() { printf called > "$AUDIT_FILE"; printf '65534\\n'; }
 export -f id
-exec bash "$1" "$2"
+script="$1"
+shift
+exec bash "$script" "$@"
 '''
-                    result = subprocess.run(["bash", "-c", code, "test", str(SCRIPT), option],
+                    arguments = ["bash", "-c", code, "test", str(SCRIPT)]
+                    if option is not None:
+                        arguments.append(option)
+                    result = subprocess.run(arguments,
                                             env=env, capture_output=True, text=True, timeout=5)
                     self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
                     self.assertIn("UGREEN SMART Report", result.stdout)

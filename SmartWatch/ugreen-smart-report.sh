@@ -124,7 +124,7 @@ Options:
   --test-mail      Send test email only
 
 Notes:
-  - Without parameters, the script behaves like --monthly-long
+  - Without parameters, show help without starting a test
   - Output language depends on LANGUAGE, e.g. de or en
   - DEBUG_SMTP controls only SMTP send/reply output
   - DEBUG_REPORT_MAIL controls only DEBUG_REPORT output
@@ -160,7 +160,7 @@ Optionen:
   --test-mail      Nur Test-E-Mail senden
 
 Hinweise:
-  - Ohne Parameter verhält sich das Skript wie --monthly-long
+  - Ohne Parameter wird die Hilfe angezeigt und kein Test gestartet
   - Die Ausgabesprache richtet sich nach LANGUAGE, z. B. de oder en
   - DEBUG_SMTP steuert nur SMTP send/reply-Ausgaben
   - DEBUG_REPORT_MAIL steuert nur DEBUG_REPORT-Ausgaben
@@ -176,7 +176,7 @@ EOF
 
 # Help must not require privileges, touch logs, or inspect attached drives.
 case "${1:-}" in
-  --help|-h|--)
+  ""|--help|-h|--)
     show_help
     exit 0
     ;;
@@ -2897,11 +2897,8 @@ export SMTP_SERVER SMTP_PORT SMTP_USER SMTP_PASS MAIL_FROM MAIL_TO SMTP_USE_TLS 
 
 detect_all_drives
 build_drive_label_cache
-MODE="monthly-long"
+MODE="report-only"
 case "${1:-}" in
-  "" )
-    MODE="monthly-long"
-    ;;
   --weekly-short)
     MODE="weekly-short"
     ;;

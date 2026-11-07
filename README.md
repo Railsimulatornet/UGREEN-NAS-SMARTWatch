@@ -1,6 +1,6 @@
 # UGREEN-NAS-SMARTWatch
 
-Version: **5.00.2**
+Version: **5.02**
 
 [![Quality](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -134,10 +134,10 @@ Weitere Projektbilder und beide Sprachfassungen liegen unter [Screens/](Screens/
 | --- | --- |
 | [SmartWatch/ugreen-smart-report.sh](SmartWatch/ugreen-smart-report.sh) | Laufwerksprüfung, Selbsttests und Mailbericht. |
 | [SmartWatch/smart-report.env.example](SmartWatch/smart-report.env.example) | Konfigurationsvorlage. |
-| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
+| [UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Versionshinweise zu v5.00. |
 
-Aktuelle Skriptversion: **5.00.2**, veröffentlicht als **V5.02** mit dem bestehenden Tag `v5.00.2`. Die Download-Dateien tragen weiterhin die Skriptversion im Namen.
+Aktuelle Skriptversion: **5.02**.
 
 Die Änderungen in v5.00 umfassen zusätzliche GT-/Ultra-Modellkennungen, U.2-Erkennung und Schachtzuordnung, verbesserte Modellnormalisierung und NVMe-Anzeige sowie getrennte deutsche und englische Ausgaben. Übersprungene eMMC-Lesetests und Fortschrittsmeldungen vor und nach vollständigen Lesetests werden genauer dargestellt.
 
@@ -274,10 +274,10 @@ Further project images and both language versions are available under [Screens/]
 | --- | --- |
 | [SmartWatch/ugreen-smart-report.sh](SmartWatch/ugreen-smart-report.sh) | Drive checks, self-tests and email reporting. |
 | [SmartWatch/smart-report.env.example](SmartWatch/smart-report.env.example) | Configuration template. |
-| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Detailed German and English manual. |
+| [UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf) | Detailed German and English manual. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Release notes for v5.00. |
 
-Current script version: **5.00.2**, published as **V5.02** under the existing tag `v5.00.2`. Download filenames still use the script version.
+Current script version: **5.02**.
 
 The v5.00 changes include additional GT/Ultra model identifiers, U.2 detection and bay mapping, improved model normalization and NVMe display, and separate German and English output. Skipped eMMC read tests and progress messages before and after full read tests are displayed more precisely.
 

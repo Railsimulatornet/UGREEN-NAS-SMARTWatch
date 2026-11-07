@@ -1,5 +1,7 @@
 # UGREEN-NAS-SMARTWatch
 
+Version: **5.01**
+
 [![Quality](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml)
 
 ![SMARTWatch](Screens/SMARTWatch.png)
@@ -213,7 +215,7 @@ Empfohlene Standardpfade:
 
 ## Dokumentation
 
-- Handbuch (DE/EN): `UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf`
+- Handbuch (DE/EN): `UGREEN_SMARTWatch_Manual_DE-EN_v5.01.pdf`
 - Versionshinweise: `RELEASE_NOTES_v5.00.md`
 
 ## Lizenz
@@ -222,7 +224,7 @@ MIT License
 
 ## Version
 
-- v5.00.1
+- v5.01
 
 ---
 
@@ -431,7 +433,7 @@ Recommended default paths:
 
 ## Documentation
 
-- Manual (DE/EN): `UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf`
+- Manual (DE/EN): `UGREEN_SMARTWatch_Manual_DE-EN_v5.01.pdf`
 - Release notes: `RELEASE_NOTES_v5.00.md`
 
 ## License
@@ -440,6 +442,6 @@ MIT License
 
 ## Version
 
-- v5.00.1
+- v5.01
 
 <!-- refresh contributors graph -->

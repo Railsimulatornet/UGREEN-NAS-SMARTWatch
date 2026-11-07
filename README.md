@@ -1,5 +1,7 @@
 # UGREEN-NAS-SMARTWatch
 
+Version: **5.00.2**
+
 [![Quality](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -132,7 +134,7 @@ Weitere Projektbilder und beide Sprachfassungen liegen unter [Screens/](Screens/
 | --- | --- |
 | [SmartWatch/ugreen-smart-report.sh](SmartWatch/ugreen-smart-report.sh) | Laufwerksprüfung, Selbsttests und Mailbericht. |
 | [SmartWatch/smart-report.env.example](SmartWatch/smart-report.env.example) | Konfigurationsvorlage. |
-| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
+| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Versionshinweise zu v5.00. |
 
 Aktuelle Skriptversion: **v5.00.1**. Die bestehenden Handbuch- und Versionshinweisdateien behalten ihre ursprünglichen Namen.
@@ -272,7 +274,7 @@ Further project images and both language versions are available under [Screens/]
 | --- | --- |
 | [SmartWatch/ugreen-smart-report.sh](SmartWatch/ugreen-smart-report.sh) | Drive checks, self-tests and email reporting. |
 | [SmartWatch/smart-report.env.example](SmartWatch/smart-report.env.example) | Configuration template. |
-| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.pdf) | Detailed German and English manual. |
+| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Detailed German and English manual. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Release notes for v5.00. |
 
 Current script version: **v5.00.1**. The existing manual and release-note files keep their original names.
@@ -285,3 +287,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 Copyright © 2026 **Roman Glos**.
 
+
+## Paketprüfung / Package verification
+
+[BUILDING.md](BUILDING.md) beschreibt den geprüften Paketbau. / See [BUILDING.md](BUILDING.md) for package build and verification.

@@ -4,3 +4,7 @@ SmartWatch_5.00.zip
 *.tmp
 Thumbs.db
 desktop.ini
+
+__pycache__/
+*.pyc
+dist/

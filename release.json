@@ -1,13 +1,13 @@
 {
-  "version": "5.00.2",
-  "tag": "v5.00.2",
-  "archive": "SmartWatch_5.00.2.zip",
+  "version": "5.02",
+  "tag": "V5.02",
+  "archive": "SmartWatch_5.02.zip",
   "files": [
     "SmartWatch/smart-report.env.example",
     "SmartWatch/ugreen-smart-report.sh",
     "README.md",
     "LICENSE",
-    "UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf",
+    "UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf",
     "CHANGELOG.md"
   ],
   "version_markers": {
@@ -18,6 +18,6 @@
     "SMARTWATCH_SOURCE": "SmartWatch/ugreen-smart-report.sh"
   },
   "separate_assets": [
-    "UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf"
+    "UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf"
   ]
 }

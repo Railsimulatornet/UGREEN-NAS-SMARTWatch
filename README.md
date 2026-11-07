@@ -1,6 +1,6 @@
 # UGREEN-NAS-SMARTWatch
 
-Version: **5.00.2**
+Version: **5.02**
 
 [![Quality](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/Railsimulatornet/UGREEN-NAS-SMARTWatch/actions/workflows/quality.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -134,7 +134,7 @@ Weitere Projektbilder und beide Sprachfassungen liegen unter [Screens/](Screens/
 | --- | --- |
 | [SmartWatch/ugreen-smart-report.sh](SmartWatch/ugreen-smart-report.sh) | Laufwerksprüfung, Selbsttests und Mailbericht. |
 | [SmartWatch/smart-report.env.example](SmartWatch/smart-report.env.example) | Konfigurationsvorlage. |
-| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
+| [UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Versionshinweise zu v5.00. |
 
 Die aktuelle Paketversion steht am Anfang dieser README. Ältere Versionshinweise bleiben als Historie erhalten.
@@ -274,7 +274,7 @@ Further project images and both language versions are available under [Screens/]
 | --- | --- |
 | [SmartWatch/ugreen-smart-report.sh](SmartWatch/ugreen-smart-report.sh) | Drive checks, self-tests and email reporting. |
 | [SmartWatch/smart-report.env.example](SmartWatch/smart-report.env.example) | Configuration template. |
-| [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Detailed German and English manual. |
+| [UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.02.pdf) | Detailed German and English manual. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Release notes for v5.00. |
 
 The current package version is listed at the beginning of this README. Older release notes remain available as history.

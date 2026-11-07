@@ -137,7 +137,7 @@ Weitere Projektbilder und beide Sprachfassungen liegen unter [Screens/](Screens/
 | [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Ausführliches Handbuch auf Deutsch und Englisch. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Versionshinweise zu v5.00. |
 
-Aktuelle Skriptversion: **v5.00.1**. Die bestehenden Handbuch- und Versionshinweisdateien behalten ihre ursprünglichen Namen.
+Die aktuelle Paketversion steht am Anfang dieser README. Ältere Versionshinweise bleiben als Historie erhalten.
 
 Die Änderungen in v5.00 umfassen zusätzliche GT-/Ultra-Modellkennungen, U.2-Erkennung und Schachtzuordnung, verbesserte Modellnormalisierung und NVMe-Anzeige sowie getrennte deutsche und englische Ausgaben. Übersprungene eMMC-Lesetests und Fortschrittsmeldungen vor und nach vollständigen Lesetests werden genauer dargestellt.
 
@@ -277,7 +277,7 @@ Further project images and both language versions are available under [Screens/]
 | [UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf](UGREEN_SMARTWatch_Manual_DE-EN_v5.00.2.pdf) | Detailed German and English manual. |
 | [RELEASE_NOTES_v5.00.md](RELEASE_NOTES_v5.00.md) | Release notes for v5.00. |
 
-Current script version: **v5.00.1**. The existing manual and release-note files keep their original names.
+The current package version is listed at the beginning of this README. Older release notes remain available as history.
 
 The v5.00 changes include additional GT/Ultra model identifiers, U.2 detection and bay mapping, improved model normalization and NVMe display, and separate German and English output. Skipped eMMC read tests and progress messages before and after full read tests are displayed more precisely.
 

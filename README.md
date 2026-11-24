@@ -79,7 +79,7 @@ Die vollständige Vorlage ist [SmartWatch/smart-report.env.example](SmartWatch/s
 | NAS-Anzeige | `NAS_CUSTOM_NAME` ergänzt den Namen; `NAS_MODEL_OVERRIDE` überschreibt bei Bedarf die automatische Modellerkennung. Die unterstützten Kennungen stehen in der Vorlage. |
 | Logs | `LOG_DIR`, `LOG_FILE` und `LOG_RETENTION_DAYS`. Vorgabe: `/volume2/NASAdmin/Logs/SmartWatch`, Aufbewahrung 30 Tage. |
 | SMTP-Zugang | `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` und `MAIL_TO`. |
-| Mailverschlüsselung | `SMTP_USE_TLS=true` und `SMTP_USE_SSL=false` für STARTTLS; für implizites TLS die Werte passend zum Server umstellen. |
+| Mailverschlüsselung | `SMTP_USE_TLS=true` und `SMTP_USE_SSL=false` für STARTTLS; für implizites TLS die Werte passend zum Server umstellen. Zertifikate und Servernamen werden gegen den System-Vertrauensspeicher geprüft. |
 | USB | `INCLUDE_USB_DRIVES` steuert die Einbeziehung von USB-Laufwerken. |
 | eMMC | `EMMC_ENABLE_CHECK` aktiviert die Zustandsprüfung, `EMMC_ENABLE_READTEST` den optionalen Lesetest. |
 | NVMe-Wartezeiten | `NVME_MAX_WAIT_SHORT_MIN=15` und `NVME_MAX_WAIT_LONG_MIN=240` begrenzen die Wartezeit auf Selbsttests. |
@@ -219,7 +219,7 @@ The complete template is [SmartWatch/smart-report.env.example](SmartWatch/smart-
 | NAS display | `NAS_CUSTOM_NAME` adds a custom name; `NAS_MODEL_OVERRIDE` can override automatic model detection. Supported identifiers are listed in the template. |
 | Logs | `LOG_DIR`, `LOG_FILE` and `LOG_RETENTION_DAYS`. Default directory: `/volume2/NASAdmin/Logs/SmartWatch`, with 30-day retention. |
 | SMTP access | `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` and `MAIL_TO`. |
-| Email encryption | `SMTP_USE_TLS=true` and `SMTP_USE_SSL=false` for STARTTLS; adjust the values to the server when using implicit TLS. |
+| Email encryption | `SMTP_USE_TLS=true` and `SMTP_USE_SSL=false` for STARTTLS; adjust the values to the server when using implicit TLS. Certificates and server names are checked against the system trust store. |
 | USB | `INCLUDE_USB_DRIVES` controls USB-drive inclusion. |
 | eMMC | `EMMC_ENABLE_CHECK` enables health checks; `EMMC_ENABLE_READTEST` enables the optional read test. |
 | NVMe wait times | `NVME_MAX_WAIT_SHORT_MIN=15` and `NVME_MAX_WAIT_LONG_MIN=240` limit the wait for self-tests. |

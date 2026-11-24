@@ -1139,7 +1139,7 @@ send_notice_mail_python() {
   custom_name="${NAS_CUSTOM_NAME}"
 
   "$PYTHON_BIN" -u - "$mode" "$notice_type" "$detail_text" "$raw_model" "$model_override" "$custom_name" <<'PYEOF'
-import smtplib, datetime, sys, re, os, subprocess, html
+import smtplib, datetime, sys, re, os, subprocess, html, ssl
 from email.mime.text import MIMEText
 
 mode = sys.argv[1] or ""
@@ -1489,7 +1489,7 @@ msg["To"] = MAIL_TO
 
 try:
     if SMTP_USE_SSL:
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30, context=ssl.create_default_context()) as server:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USER:
@@ -1500,7 +1500,7 @@ try:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USE_TLS:
-                server.starttls()
+                server.starttls(context=ssl.create_default_context())
             if SMTP_USER:
                 server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
@@ -1579,7 +1579,7 @@ send_smart_report_python() {
   NVME_ABORTED_DRIVES="${nvme_aborted_export}" \
   NVME_ABORT_FAILED_DRIVES="${nvme_abort_failed_export}" \
   "$PYTHON_BIN" -u - "$mode" "$raw_model" "$model_override" "$custom_name" "$emmc_check" "$emmc_read" <<'PYEOF'
-import subprocess, json, datetime, smtplib, sys, os, re, time
+import subprocess, json, datetime, smtplib, sys, os, re, time, ssl
 from email.mime.text import MIMEText
 
 mode = sys.argv[1]
@@ -2677,7 +2677,7 @@ if DEBUG_SAVE_REPORT_HTML:
 
 try:
     if SMTP_USE_SSL:
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30, context=ssl.create_default_context()) as server:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USER:
@@ -2688,7 +2688,7 @@ try:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USE_TLS:
-                server.starttls()
+                server.starttls(context=ssl.create_default_context())
             if SMTP_USER:
                 server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
@@ -2717,7 +2717,7 @@ send_test_mail_python() {
   custom_name="${NAS_CUSTOM_NAME}"
   if is_en; then
     "$PYTHON_BIN" -u - "$raw_model" "$model_override" "$custom_name" <<'PYEOF'
-import smtplib, datetime, sys, re, os
+import smtplib, datetime, sys, re, os, ssl
 from email.mime.text import MIMEText
 
 raw_model = sys.argv[1] or ""
@@ -2775,7 +2775,7 @@ msg["To"] = MAIL_TO
 
 try:
     if SMTP_USE_SSL:
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30, context=ssl.create_default_context()) as server:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USER:
@@ -2786,7 +2786,7 @@ try:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USE_TLS:
-                server.starttls()
+                server.starttls(context=ssl.create_default_context())
             if SMTP_USER:
                 server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
@@ -2800,7 +2800,7 @@ except Exception as e:
 PYEOF
   else
     "$PYTHON_BIN" -u - "$raw_model" "$model_override" "$custom_name" <<'PYEOF'
-import smtplib, datetime, sys, re, os
+import smtplib, datetime, sys, re, os, ssl
 from email.mime.text import MIMEText
 
 raw_model = sys.argv[1] or ""
@@ -2858,7 +2858,7 @@ msg["To"] = MAIL_TO
 
 try:
     if SMTP_USE_SSL:
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30, context=ssl.create_default_context()) as server:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USER:
@@ -2869,7 +2869,7 @@ try:
             if DEBUG_SMTP:
                 server.set_debuglevel(1)
             if SMTP_USE_TLS:
-                server.starttls()
+                server.starttls(context=ssl.create_default_context())
             if SMTP_USER:
                 server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
